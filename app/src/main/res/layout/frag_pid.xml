@@ -49,6 +49,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
+                        android:id="@+id/throttle_kp"
                         android:paddingLeft="16dp"
                         android:text="3.5"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -66,7 +67,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/throttle_kd"
                         android:paddingLeft="16dp"
                         android:text="2.1"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -84,7 +85,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/throttle_ki"
                         android:paddingLeft="16dp"
                         android:text="0.67"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -137,6 +138,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
+                        android:id="@+id/pitch_kp"
                         android:paddingLeft="16dp"
                         android:text="3.4"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -154,7 +156,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/pitch_kd"
                         android:paddingLeft="16dp"
                         android:text="2.0"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -172,7 +174,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/pitch_ki"
                         android:paddingLeft="16dp"
                         android:text="0.67"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -225,6 +227,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
+                        android:id="@+id/roll_kp"
                         android:paddingLeft="16dp"
                         android:text="2.5"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -242,7 +245,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/roll_kd"
                         android:paddingLeft="16dp"
                         android:text="3.45"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -260,7 +263,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/roll_ki"
                         android:paddingLeft="16dp"
                         android:text="0.67"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -313,6 +316,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
+                        android:id="@+id/yaw_kp"
                         android:paddingLeft="16dp"
                         android:text="2.65"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -330,7 +334,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/yaw_kd"
                         android:paddingLeft="16dp"
                         android:text="1.45"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
@@ -348,7 +352,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                     <EditText
-
+                        android:id="@+id/yaw_ki"
                         android:paddingLeft="16dp"
                         android:text="0.67"
                         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
