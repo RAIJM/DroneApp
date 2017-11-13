@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single"
+        android:id="@+id/group_1">
+
+        <item
+            android:id="@+id/attitude"
+            android:title="Attitude" />
+        <item
+            android:id="@+id/altitude"
+            android:title="Altitude" />
+        <item
+            android:id="@+id/reciever"
+            android:title="Reciever" />
+        <item
+            android:id="@+id/gps"
+            android:title="Gps"/>
+        <item
+            android:id="@+id/pid"
+            android:title="PID"/>
+    </group>
+
+</menu>
