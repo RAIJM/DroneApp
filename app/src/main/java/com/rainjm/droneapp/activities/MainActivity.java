@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
@@ -73,9 +74,15 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment,  new AttitudeFragment())
+                .commit();
+        actionBar.setTitle("Attitude");
 
-        NavigationView view = (NavigationView) findViewById(R.id.nav_drawer);
-        view.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_drawer);
+
+        navigationView.setCheckedItem(R.id.attitude);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override public boolean onNavigationItemSelected(MenuItem menuItem) {
 
                 switch (menuItem.getItemId())
@@ -84,30 +91,35 @@ public class MainActivity extends AppCompatActivity {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,  new AltitudeFragment())
                                 .commit();
+                        actionBar.setTitle("Altitude");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.attitude:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,  new AttitudeFragment())
                                 .commit();
+                        actionBar.setTitle("Attitude");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.gps:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,  new GpsFragment())
                                 .commit();
+                        actionBar.setTitle("GPS");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.reciever:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,  new RecieverFragment())
                                 .commit();
+                        actionBar.setTitle("Receiver");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.pid:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,  new PIDFragment())
                                 .commit();
+                        actionBar.setTitle("PID");
                         drawerLayout.closeDrawers();
                         return true;
 
@@ -119,43 +131,43 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        /*usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        startButton = (Button) findViewById(R.id.buttonStart);
-        serial = UsbSerialDevice.createUsbSerialDevice(device, usbConnection);
+        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        ///startButton = (Button) findViewById(R.id.buttonStart);
+        //serial = UsbSerialDevice.createUsbSerialDevice(device, usbConnection);
         IntentFilter intentFilter = new IntentFilter(ACTION_USB_PERMISSION);
         registerReceiver(broadcastReceiver,intentFilter);
 
-        startButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                HashMap usbDevices = usbManager.getDeviceList();
-                if (!usbDevices.isEmpty()) {
-                    boolean keep = true;
-                    for (Object entry : usbDevices.entrySet()) {
-                        device = (UsbDevice) ((Map.Entry)entry).getValue();
-                        int deviceVID = device.getVendorId();
-                        if (deviceVID == 0x2341)//Arduino Vendor ID
-                        {
-                            PendingIntent pi = PendingIntent.getBroadcast(view.getContext(), 0,
-                                    new Intent(ACTION_USB_PERMISSION), 0);
-                            usbManager.requestPermission(device, pi);
-                            keep = false;
-                        } else {
-                            usbConnection = null;
-                            device = null;
-                        }
 
-                        if (!keep)
-                            break;
-                    }
+
+
+
+
+
+    }
+
+    public void connect()
+    {
+        HashMap usbDevices = usbManager.getDeviceList();
+        if (!usbDevices.isEmpty()) {
+            boolean keep = true;
+            for (Object entry : usbDevices.entrySet()) {
+                device = (UsbDevice) ((Map.Entry)entry).getValue();
+                int deviceVID = device.getVendorId();
+                if (deviceVID == 0x2341)//Arduino Vendor ID
+                {
+                    PendingIntent pi = PendingIntent.getBroadcast(this, 0,
+                            new Intent(ACTION_USB_PERMISSION), 0);
+                    usbManager.requestPermission(device, pi);
+                    keep = false;
+                } else {
+                    usbConnection = null;
+                    device = null;
                 }
+
+                if (!keep)
+                    break;
             }
-        });*/
-
-
-
-
-
+        }
     }
 
 
@@ -176,6 +188,11 @@ public class MainActivity extends AppCompatActivity {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
                 return true;
+            case R.id.action_connect:
+                //Toast.makeText(this,"hello",Toast.LENGTH_SHORT).show();
+                connect();
+                return true;
+
         }
         return super.onOptionsItemSelected(item);
 
