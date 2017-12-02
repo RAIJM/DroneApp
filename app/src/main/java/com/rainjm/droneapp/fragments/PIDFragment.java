@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.rainjm.droneapp.R;
+import com.rainjm.droneapp.activities.MainActivity;
 
 /**
  * Created by stone on 11/11/17.
@@ -77,7 +78,7 @@ public class PIDFragment extends Fragment {
     {
         double throttle_kp = Double.parseDouble(editKpThrottle.getText().toString());
         double throttle_kd = Double.parseDouble(editKdThrottle.getText().toString());
-        double throttle_kI = Double.parseDouble(editKiThrottle.getText().toString());
+        double throttle_ki = Double.parseDouble(editKiThrottle.getText().toString());
         double pitch_kp = Double.parseDouble(editKpPitch.getText().toString());
         double pitch_kd = Double.parseDouble(editKdPitch.getText().toString());
         double pitch_ki = Double.parseDouble(editKiPitch.getText().toString());
@@ -87,5 +88,23 @@ public class PIDFragment extends Fragment {
         double yaw_kp = Double.parseDouble(editKpYaw.getText().toString());
         double yaw_kd = Double.parseDouble(editKdYaw.getText().toString());
         double yaw_ki = Double.parseDouble(editKiYaw.getText().toString());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(throttle_kp + " ");
+        sb.append(throttle_kd + " ");
+        sb.append(throttle_ki + " ");
+        sb.append(pitch_kp + " ");
+        sb.append(pitch_kd + " ");
+        sb.append(pitch_ki + " ");
+        sb.append(roll_kp + " ");
+        sb.append(roll_kd + " ");
+        sb.append(roll_ki + " ");
+        sb.append(yaw_kp  + " ");
+        sb.append(yaw_kd + " ");
+        sb.append(yaw_ki +"\n");
+
+        ((MainActivity)getActivity()).sendPIDData(sb.toString());
+
+
     }
 }

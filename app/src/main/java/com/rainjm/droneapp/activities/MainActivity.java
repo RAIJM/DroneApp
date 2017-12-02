@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private RecieverFragment recieverFragment;
     private PIDFragment pidFragment;
     private int step = 0;
+    private ActionBar mActionBar;
 
 
     @Override
@@ -65,78 +66,13 @@ public class MainActivity extends AppCompatActivity {
 
         setUpBluetooth();
 
+        setUpActionBar();
 
-
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-
-        final ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            //actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            final ActionBarDrawerToggle toggle =
-                    new ActionBarDrawerToggle(this, drawerLayout, R.string.app_name, R.string.app_name);
-
-            toggle.setDrawerIndicatorEnabled(true);
-            drawerLayout.addDrawerListener(toggle);
-            toggle.syncState();
-
-        }
+        initNavDrawer();
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment,  new AttitudeFragment())
                 .commit();
-        actionBar.setTitle("Attitude");
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_drawer);
-
-        navigationView.setCheckedItem(R.id.attitude);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override public boolean onNavigationItemSelected(MenuItem menuItem) {
-
-                switch (menuItem.getItemId())
-                {
-                    case R.id.altitude:
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,altitudeFragment)
-                                .commit();
-                        actionBar.setTitle("Altitude");
-                        drawerLayout.closeDrawers();
-                        return true;
-                    case R.id.attitude:
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,  atitudeFragment)
-                                .commit();
-                        actionBar.setTitle("Attitude");
-                        drawerLayout.closeDrawers();
-                        return true;
-                    case R.id.gps:
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,gpsFragment)
-                                .commit();
-                        actionBar.setTitle("GPS");
-                        drawerLayout.closeDrawers();
-                        return true;
-                    case R.id.reciever:
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment, recieverFragment)
-                                .commit();
-                        actionBar.setTitle("Receiver");
-                        drawerLayout.closeDrawers();
-                          return true;
-                    case R.id.pid:
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment, pidFragment)
-                                .commit();
-                        actionBar.setTitle("PID");
-                        drawerLayout.closeDrawers();
-                        return true;
-
-                }
-                return true;
-            }
-        });
-
-
 
     }
 
@@ -148,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         recieverFragment = new RecieverFragment();
         pidFragment = new PIDFragment();
     }
+
 
     private void setUpBluetooth()
     {
@@ -172,6 +109,80 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    private void setUpActionBar()
+    {
+        mActionBar = getSupportActionBar();
+        if (mActionBar != null) {
+            //actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_black_24dp);
+            mActionBar.setDisplayHomeAsUpEnabled(true);
+            final ActionBarDrawerToggle toggle =
+                    new ActionBarDrawerToggle(this, drawerLayout, R.string.app_name, R.string.app_name);
+
+            toggle.setDrawerIndicatorEnabled(true);
+            drawerLayout.addDrawerListener(toggle);
+            toggle.syncState();
+            mActionBar.setTitle("Attitude");
+
+        }
+
+    }
+
+    private void initNavDrawer()
+    {
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_drawer);
+
+        navigationView.setCheckedItem(R.id.attitude);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+                switch (menuItem.getItemId())
+                {
+                    case R.id.altitude:
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment,altitudeFragment)
+                                .commit();
+                        mActionBar.setTitle("Altitude");
+                        drawerLayout.closeDrawers();
+                        return true;
+                    case R.id.attitude:
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment,  atitudeFragment)
+                                .commit();
+                        mActionBar.setTitle("Attitude");
+                        drawerLayout.closeDrawers();
+                        return true;
+                    case R.id.gps:
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment,gpsFragment)
+                                .commit();
+                        mActionBar.setTitle("GPS");
+                        drawerLayout.closeDrawers();
+                        return true;
+                    case R.id.reciever:
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment, recieverFragment)
+                                .commit();
+                        mActionBar.setTitle("Receiver");
+                        drawerLayout.closeDrawers();
+                        return true;
+                    case R.id.pid:
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment, pidFragment)
+                                .commit();
+                        mActionBar.setTitle("PID");
+                        drawerLayout.closeDrawers();
+                        return true;
+
+                }
+                return true;
+            }
+        });
+    }
+
+
 
     public void connect()
     {
@@ -289,6 +300,20 @@ public class MainActivity extends AppCompatActivity {
 
 
         return dataMap;
+
+    }
+
+    public void sendPIDData(String data)
+    {
+        try{
+            if(mmOutputStream != null)
+            {
+                mmOutputStream.write(data.getBytes());
+            }
+        }catch (IOException io){
+            Log.d("Output Error",io.getMessage());
+        }
+
 
     }
 
