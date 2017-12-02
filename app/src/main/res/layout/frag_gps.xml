@@ -69,13 +69,10 @@
         android:layout_height="match_parent"
         android:id="@+id/map_container">
 
-        <fragment
-            android:id="@+id/map"
-            class="com.google.android.gms.maps.SupportMapFragment"
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/mapView"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:layout_alignParentLeft="true"
-            />
+            android:layout_height="300dp" />
     </RelativeLayout>
 
 </LinearLayout>

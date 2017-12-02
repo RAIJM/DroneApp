@@ -17,6 +17,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.rainjm.droneapp.R;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import static android.R.attr.entries;
 
@@ -27,7 +28,13 @@ import static android.R.attr.entries;
 public class AttitudeFragment extends Fragment {
 
     private LineChart lineChart;
+    private double pitch;
+    private double roll;
+    private double yaw;
 
+    LineDataSet pitchDataset;
+    LineDataSet rollDataset;
+    LineDataSet yawDataset;
 
 
     public AttitudeFragment()
@@ -70,21 +77,21 @@ public class AttitudeFragment extends Fragment {
 
         ArrayList<ILineDataSet> lines = new ArrayList<ILineDataSet> ();
         String[] xAxis = new String[] {"1", "2", "3", "4", "5","6"};
-        LineDataSet lDataSet1 = new LineDataSet(entries, "Roll");
-        lDataSet1.setColor(Color.parseColor("#00ff00"));
+        pitchDataset = new LineDataSet(entries, "Roll");
+        pitchDataset.setColor(Color.parseColor("#00ff00"));
 
         //lDataSet1.setDrawFilled(true);
-        lines.add(lDataSet1);
+        lines.add(pitchDataset);
 
-        LineDataSet lDataSet2 = new LineDataSet(entry, "Pitch");
-        lDataSet2.setColor(Color.parseColor("#0000ff"));
+        rollDataset = new LineDataSet(entry, "Pitch");
+        rollDataset.setColor(Color.parseColor("#0000ff"));
         //lDataSet2.setDrawFilled(true);
-        lines.add(lDataSet2);
+        lines.add(rollDataset);
 
-        LineDataSet lDataSet3 = new LineDataSet(entry2, "Heading");
-        lDataSet3.setColor(Color.parseColor("#ff0000"));
+        yawDataset= new LineDataSet(entry2, "Heading");
+        yawDataset.setColor(Color.parseColor("#ff0000"));
         //lDataSet2.setDrawFilled(true);
-        lines.add(lDataSet3);
+        lines.add(yawDataset);
 
         lineChart.setData(new LineData(lines));
         lineChart.animateY(5000);
@@ -94,5 +101,20 @@ public class AttitudeFragment extends Fragment {
 
 
         return view;
+    }
+
+    public void update_data(Map<String,String> dataMap)
+    {
+        pitch = Double.parseDouble(dataMap.get("attitude_pitch"));
+        roll = Double.parseDouble(dataMap.get("attitude_roll"));
+        yaw = Double.parseDouble(dataMap.get("attitude_yaw"));
+
+        int step = Integer.valueOf(dataMap.get("step"));
+
+
+        pitchDataset.addEntry(new Entry(step,(float)pitch));
+        rollDataset.addEntry(new Entry(step,(float)roll));
+        yawDataset.addEntry(new Entry(step,(float)yaw));
+
     }
 }

@@ -17,6 +17,7 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import com.rainjm.droneapp.R;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by stone on 11/11/17.
@@ -49,6 +50,7 @@ public class RecieverFragment extends Fragment {
 
         BarDataSet dataset = new BarDataSet(entries, "# of Calls");
 
+
         //LimitLine line = new LimitLine(10f);
         //dataset.addLimitLine(line);
 
@@ -67,5 +69,23 @@ public class RecieverFragment extends Fragment {
 
 
         return view;
+    }
+
+    public void update_data(Map<String,String> dataMap)
+    {
+        float throttle = Float.valueOf(dataMap.get("throttle"));
+        float roll = Float.valueOf(dataMap.get("roll"));
+        float pitch = Float.valueOf(dataMap.get("pitch"));
+        float yaw = Float.valueOf(dataMap.get("yaw"));
+
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        entries.add(new BarEntry(0, throttle));
+        entries.add(new BarEntry(1, roll));
+        entries.add(new BarEntry(2, pitch));
+        entries.add(new BarEntry(3, yaw));
+
+        BarDataSet dataset = new BarDataSet(entries, "# of Calls");
+        BarData data = new BarData(dataset);
+        barChart.setData(data);
     }
 }

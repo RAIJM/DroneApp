@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.ShareCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.rainjm.droneapp.R;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created by stone on 11/11/17.
@@ -25,6 +27,7 @@ public class AltitudeFragment extends Fragment {
 
     View view;
     private LineChart lineChart;
+    private LineDataSet altDataset;
 
     public AltitudeFragment()
     {
@@ -57,11 +60,11 @@ public class AltitudeFragment extends Fragment {
 
         ArrayList<ILineDataSet> lines = new ArrayList<ILineDataSet> ();
         String[] xAxis = new String[] {"1", "2", "3", "4", "5","6"};
-        LineDataSet lDataSet1 = new LineDataSet(entries, "Alt");
-        lDataSet1.setColor(Color.parseColor("#00ff00"));
+        altDataset = new LineDataSet(entries, "Alt");
+        altDataset.setColor(Color.parseColor("#00ff00"));
 
         //lDataSet1.setDrawFilled(true);
-        lines.add(lDataSet1);
+        lines.add(altDataset);
 
         LineDataSet lDataSet2 = new LineDataSet(entry, "Height");
         lDataSet2.setColor(Color.parseColor("#0000ff"));
@@ -72,5 +75,13 @@ public class AltitudeFragment extends Fragment {
         lineChart.animateY(5000);
 
         return view;
+    }
+
+    public void update_data(Map<String,String> dataMap)
+    {
+        double altitude = Double.parseDouble(dataMap.get("altitude"));
+        int step = Integer.valueOf(dataMap.get("step"));
+
+        altDataset.addEntry(new Entry(step,(float)altitude));
     }
 }

@@ -3,6 +3,7 @@
     package="com.rainjm.droneapp">
 
     <uses-feature android:name="android.hardware.usb.host" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use

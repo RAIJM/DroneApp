@@ -1,17 +1,12 @@
 package com.rainjm.droneapp.activities;
 
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.os.Handler;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -19,37 +14,44 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.Toast;
-
-import com.felhr.usbserial.UsbSerialDevice;
-import com.felhr.usbserial.UsbSerialInterface;
 import com.rainjm.droneapp.R;
 import com.rainjm.droneapp.fragments.AltitudeFragment;
 import com.rainjm.droneapp.fragments.AttitudeFragment;
 import com.rainjm.droneapp.fragments.GpsFragment;
 import com.rainjm.droneapp.fragments.PIDFragment;
 import com.rainjm.droneapp.fragments.RecieverFragment;
-
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
-import static com.rainjm.droneapp.R.id.textView;
 
 public class MainActivity extends AppCompatActivity {
 
-    UsbManager usbManager;
-    Button startButton;
-    UsbDevice device;
-    UsbDeviceConnection usbConnection;
-    UsbSerialDevice serial;
-    UsbSerialDevice serialPort;
-    public static final String ACTION_USB_PERMISSION = "action_usb_permission";
+
     private DrawerLayout drawerLayout;
+    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothSocket mmSocket;
+    private OutputStream mmOutputStream;
+    private InputStream mmInputStream;
+    private Thread workerThread;
+    private BluetoothDevice mmDevice;
+    private char delimiter = '\n';
+    private boolean stopWorker = false;
+    private int readBufferPosition = 0;
+    private byte[] readBuffer = new byte[1024];
+    private AttitudeFragment atitudeFragment;
+    private AltitudeFragment altitudeFragment;
+    private GpsFragment gpsFragment;
+    private RecieverFragment recieverFragment;
+    private PIDFragment pidFragment;
+    private int step = 0;
 
 
     @Override
@@ -58,6 +60,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        initFragments();
+
+        setUpBluetooth();
+
+
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -89,35 +97,35 @@ public class MainActivity extends AppCompatActivity {
                 {
                     case R.id.altitude:
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,  new AltitudeFragment())
+                                .replace(R.id.fragment,altitudeFragment)
                                 .commit();
                         actionBar.setTitle("Altitude");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.attitude:
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,  new AttitudeFragment())
+                                .replace(R.id.fragment,  atitudeFragment)
                                 .commit();
                         actionBar.setTitle("Attitude");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.gps:
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,  new GpsFragment())
+                                .replace(R.id.fragment,gpsFragment)
                                 .commit();
                         actionBar.setTitle("GPS");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.reciever:
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,  new RecieverFragment())
+                                .replace(R.id.fragment, recieverFragment)
                                 .commit();
                         actionBar.setTitle("Receiver");
                         drawerLayout.closeDrawers();
-                        return true;
+                          return true;
                     case R.id.pid:
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.fragment,  new PIDFragment())
+                                .replace(R.id.fragment, pidFragment)
                                 .commit();
                         actionBar.setTitle("PID");
                         drawerLayout.closeDrawers();
@@ -130,45 +138,172 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    }
 
-        usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        ///startButton = (Button) findViewById(R.id.buttonStart);
-        //serial = UsbSerialDevice.createUsbSerialDevice(device, usbConnection);
-        IntentFilter intentFilter = new IntentFilter(ACTION_USB_PERMISSION);
-        registerReceiver(broadcastReceiver,intentFilter);
+    private void initFragments()
+    {
+        atitudeFragment = new AttitudeFragment();
+        altitudeFragment = new AltitudeFragment();
+        gpsFragment = new GpsFragment();
+        recieverFragment = new RecieverFragment();
+        pidFragment = new PIDFragment();
+    }
 
+    private void setUpBluetooth()
+    {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(!mBluetoothAdapter.isEnabled())
+        {
+            Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBluetooth, 0);
+        }
 
-
-
-
-
-
+        Set pairedDevices = mBluetoothAdapter.getBondedDevices();
+        if(pairedDevices.size() > 0)
+        {
+            for(Object dev : pairedDevices)
+            {
+                BluetoothDevice device = (BluetoothDevice) dev;
+                if(device.getName().equals("STEVE")) //Note, you will need to change this to match the name of your device
+                {
+                    mmDevice = device;
+                    break;
+                }
+            }
+        }
     }
 
     public void connect()
     {
-        HashMap usbDevices = usbManager.getDeviceList();
-        if (!usbDevices.isEmpty()) {
-            boolean keep = true;
-            for (Object entry : usbDevices.entrySet()) {
-                device = (UsbDevice) ((Map.Entry)entry).getValue();
-                int deviceVID = device.getVendorId();
-                if (deviceVID == 0x2341)//Arduino Vendor ID
-                {
-                    PendingIntent pi = PendingIntent.getBroadcast(this, 0,
-                            new Intent(ACTION_USB_PERMISSION), 0);
-                    usbManager.requestPermission(device, pi);
-                    keep = false;
-                } else {
-                    usbConnection = null;
-                    device = null;
-                }
-
-                if (!keep)
-                    break;
+        if(mmDevice==null)
+        {
+            Toast.makeText(this,"Device not Paired",Toast.LENGTH_SHORT).show();
+        }else{
+            UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"); //Standard SerialPortService ID
+            try{
+                mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
+                mmSocket.connect();
+                mmOutputStream = mmSocket.getOutputStream();
+                mmInputStream = mmSocket.getInputStream();
+                processHandler();
+            }catch (IOException io){
+                Toast.makeText(this,"Error connecting",Toast.LENGTH_SHORT).show();
             }
         }
+
     }
+
+    private void processHandler()
+    {
+        final Handler handler = new Handler();
+        workerThread = new Thread(new Runnable()
+        {
+            public void run()
+            {
+                while(!Thread.currentThread().isInterrupted() && !stopWorker)
+                {
+                    try{
+                        int bytesAvailable = mmInputStream.available();
+                        if(bytesAvailable > 0)
+                        {
+                            byte[] packetBytes = new byte[bytesAvailable];
+                            mmInputStream.read(packetBytes);
+
+                            for(int i=0;i<bytesAvailable;i++)
+                            {
+                                byte b = packetBytes[i];
+                                if(b == delimiter)
+                                {
+                                    byte[] encodedBytes = new byte[readBufferPosition];
+                                    System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
+                                    final String data = new String(encodedBytes, "US-ASCII");
+
+                                    handler.post(new Runnable()
+                                    {
+                                        public void run()
+                                        {
+                                            Map<String,String> dataMap = parseData(data,step);
+                                            atitudeFragment.update_data(dataMap);
+                                            altitudeFragment.update_data(dataMap);
+                                            gpsFragment.update_data(dataMap);
+                                            recieverFragment.update_data(dataMap);
+
+
+                                           // myLabel.setText(data);
+                                        }
+                                    });
+                                    readBufferPosition = 0;
+                                    step+=1;
+
+                                    //The variable data now contains our full command
+                                }
+                                else
+                                {
+                                    readBuffer[readBufferPosition++] = b;
+                                }
+                            }
+                        }
+
+
+                    }catch (IOException io){
+
+                    }catch (ArrayIndexOutOfBoundsException a){
+                        Log.d("Error",a.getMessage());
+                        //Toast.makeText(mContext,a.getMessage(),Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            }
+        });
+        workerThread.start();
+    }
+
+    private void disconnect()
+    {
+        if(mmSocket != null)
+        {
+            try{
+                mmSocket.close();
+            }catch (IOException i){
+                Log.d("Disconnect error",i.getMessage());
+            }
+
+        }
+    }
+
+    private Map<String,String> parseData(String data,int step)
+    {
+        Map<String,String> dataMap = new HashMap<>();
+        String dataArr[] = data.split(" ");
+        dataMap.put("attitude_pitch",dataArr[0]);
+        dataMap.put("attitude_roll",dataArr[1]);
+        dataMap.put("attitude_yaw",dataArr[2]);
+        dataMap.put("throttle",dataArr[3]);
+        dataMap.put("roll",dataArr[4]);
+        dataMap.put("pitch",dataArr[5]);
+        dataMap.put("yaw",dataArr[6]);
+        dataMap.put("altitude",dataArr[7]);
+        dataMap.put("latitude",dataArr[8]);
+        dataMap.put("longitude",dataArr[9]);
+        dataMap.put("step",String.valueOf(step));
+
+
+        return dataMap;
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        try{
+            if(mmSocket != null)
+                mmSocket.close();
+        }catch (IOException io){
+
+        }
+    }
+
+
 
 
 
@@ -192,61 +327,16 @@ public class MainActivity extends AppCompatActivity {
                 //Toast.makeText(this,"hello",Toast.LENGTH_SHORT).show();
                 connect();
                 return true;
+            case R.id.action_disconnect:
+                disconnect();
+                return true;
 
         }
         return super.onOptionsItemSelected(item);
 
     }
 
-    UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() {
-        //Defining a Callback which triggers whenever data is read.
-        @Override
-        public void onReceivedData(byte[] arg0) {
-            String data = null;
-            try {
-                data = new String(arg0, "UTF-8");
-                data.concat("/n");
-                //tvAppend(textView, data);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        }
-    };
 
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
-                boolean granted =
-                        intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
-                if (granted) {
-                    usbConnection = usbManager.openDevice(device);
-                    serialPort = UsbSerialDevice.createUsbSerialDevice(device, usbConnection);
-                    if (serialPort != null) {
-                        if (serialPort.open()) { //Set Serial Connection Parameters.
-                            //setUiEnabled(true); //Enable Buttons in UI
-                            serialPort.setBaudRate(9600);
-                            serialPort.setDataBits(UsbSerialInterface.DATA_BITS_8);
-                            serialPort.setStopBits(UsbSerialInterface.STOP_BITS_1);
-                            serialPort.setParity(UsbSerialInterface.PARITY_NONE);
-                            serialPort.setFlowControl(UsbSerialInterface.FLOW_CONTROL_OFF);
-                            serialPort.read(mCallback); //
-                            //tvAppend(textView,"Serial Connection Opened!\n");
 
-                        } else {
-                            Log.d("SERIAL", "PORT NOT OPEN");
-                        }
-                    } else {
-                        Log.d("SERIAL", "PORT IS NULL");
-                    }
-                } else {
-                    Log.d("SERIAL", "PERM NOT GRANTED");
-                }
-            } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
-               // onClickStart(startButton);
-            } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
-               // onClickStop(stopButton);
-            }
-        };
-    };
+
 }
