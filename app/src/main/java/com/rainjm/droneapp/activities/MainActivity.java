@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.rainjm.droneapp.R;
 import com.rainjm.droneapp.fragments.AltitudeFragment;
 import com.rainjm.droneapp.fragments.AttitudeFragment;
+import com.rainjm.droneapp.fragments.BearingFragment;
 import com.rainjm.droneapp.fragments.GpsFragment;
 import com.rainjm.droneapp.fragments.PIDFragment;
 import com.rainjm.droneapp.fragments.RecieverFragment;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private GpsFragment gpsFragment;
     private RecieverFragment recieverFragment;
     private PIDFragment pidFragment;
+    private BearingFragment bearingFragment;
     private int step = 0;
     private ActionBar mActionBar;
     private boolean update_receiver = false;
@@ -92,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
         gpsFragment = new GpsFragment();
         recieverFragment = new RecieverFragment();
         pidFragment = new PIDFragment();
+        bearingFragment = new BearingFragment();
     }
 
 
@@ -169,6 +172,16 @@ public class MainActivity extends AppCompatActivity {
                             mActionBar.setTitle("Attitude (Disconnected)");
                         drawerLayout.closeDrawers();
                         return true;
+                    case R.id.bearing:
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.fragment, bearingFragment)
+                                .commit();
+                        if(isConnected)
+                            mActionBar.setTitle("Bearing (Connected)");
+                        else
+                            mActionBar.setTitle("Bearing (Disconnected)");
+                        drawerLayout.closeDrawers();
+                        return true;
                     case R.id.gps:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,gpsFragment)
@@ -186,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                         if(isConnected)
                             mActionBar.setTitle("Receiver (Connected)");
                         else
-                            mActionBar.setTitle("Reciever (Disconnected)");
+                            mActionBar.setTitle("Receiver (Disconnected)");
                         drawerLayout.closeDrawers();
                         update_receiver = true;
                         return true;
@@ -265,10 +278,6 @@ public class MainActivity extends AppCompatActivity {
                                             Map<String,String> dataMap = new HashMap<String, String>();
                                             try{
                                                 dataMap = parseData(data,step);
-                                                //atitudeFragment.update_data(dataMap);
-                                                //altitudeFragment.update_data(dataMap);
-                                                //gpsFragment.update_data(dataMap);
-
 
                                             }catch (Exception e){
                                                 worked = false;
@@ -287,9 +296,6 @@ public class MainActivity extends AppCompatActivity {
 
                                             }
 
-
-
-                                           // myLabel.setText(data);
                                         }
                                     });
                                     readBufferPosition = 0;
@@ -340,16 +346,16 @@ public class MainActivity extends AppCompatActivity {
         Log.d("Data:",data);
         dataMap.put("attitude_pitch",dataArr[0]);
         dataMap.put("attitude_roll",dataArr[1]);
-        dataMap.put("attitude_yaw",dataArr[2]);
+        dataMap.put("bearing",dataArr[2]);
         dataMap.put("throttle",dataArr[3]);
         dataMap.put("pitch",dataArr[4]);
         dataMap.put("roll",dataArr[5]);
         dataMap.put("yaw",dataArr[6]);
         dataMap.put("altitude",dataArr[7]);
-//        dataMap.put("latitude",dataArr[8]);
-//        dataMap.put("longitude",dataArr[9]);
+        dataMap.put("height",dataArr[8]);
+        dataMap.put("latitude",dataArr[8]);
+        dataMap.put("longitude",dataArr[9]);
         dataMap.put("step",String.valueOf(step));
-
 
         return dataMap;
 

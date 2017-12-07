@@ -27,7 +27,7 @@
                 android:orientation="horizontal">
                 <TextView
 
-                    android:text="Pitch:"
+                    android:text="y (Pitch):"
                     android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -47,7 +47,7 @@
                 android:orientation="horizontal">
                 <TextView
                     android:paddingLeft="16dp"
-                    android:text="Roll:"
+                    android:text="x (Roll):"
                     android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
@@ -61,26 +61,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-                <TextView
-                    android:paddingLeft="16dp"
-                    android:text="Heading:"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-                <TextView
-                    android:paddingBottom="16dp"
-                    android:paddingLeft="16dp"
-                    android:id="@+id/att_heading"
-                    android:textColor="#ff0000"
-                    android:text="-0.6"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
+
         </LinearLayout>
 
 

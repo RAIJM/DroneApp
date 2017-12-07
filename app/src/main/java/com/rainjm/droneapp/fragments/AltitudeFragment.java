@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -25,9 +27,12 @@ import java.util.Map;
 
 public class AltitudeFragment extends Fragment {
 
-    View view;
+    private View view;
     private LineChart lineChart;
     private LineDataSet altDataset;
+    private LineDataSet heightDataset;
+    private LineData lineData;
+    private float desired_height = 3.0f;
 
     public AltitudeFragment()
     {
@@ -56,6 +61,10 @@ public class AltitudeFragment extends Fragment {
         entry.add(new Entry(4, 12f));
         entry.add(new Entry(5, 5f));
 
+        YAxis yAxis = lineChart.getAxisLeft();
+        LimitLine ll = new LimitLine(desired_height);
+        yAxis.addLimitLine(ll);
+
 
 
         ArrayList<ILineDataSet> lines = new ArrayList<ILineDataSet> ();
@@ -66,12 +75,14 @@ public class AltitudeFragment extends Fragment {
         //lDataSet1.setDrawFilled(true);
         lines.add(altDataset);
 
-        LineDataSet lDataSet2 = new LineDataSet(entry, "Height");
-        lDataSet2.setColor(Color.parseColor("#0000ff"));
+        heightDataset = new LineDataSet(entry, "Height");
+        heightDataset.setColor(Color.parseColor("#0000ff"));
         //lDataSet2.setDrawFilled(true);
-        lines.add(lDataSet2);
+        lines.add(heightDataset);
 
-        lineChart.setData(new LineData(lines));
+        lineData = new LineData(lines);
+
+        lineChart.setData(lineData);
         lineChart.animateY(5000);
 
         return view;
@@ -79,9 +90,16 @@ public class AltitudeFragment extends Fragment {
 
     public void update_data(Map<String,String> dataMap)
     {
-        double altitude = Double.parseDouble(dataMap.get("altitude"));
+        float altitude = Float.valueOf(dataMap.get("altitude"));
+        float height = Float.valueOf(dataMap.get("height"));
         int step = Integer.valueOf(dataMap.get("step"));
 
-        altDataset.addEntry(new Entry(step,(float)altitude));
+        altDataset.addEntry(new Entry(step,altitude));
+        heightDataset.addEntry(new Entry(step,height));
+
+        lineData.notifyDataChanged();
+        lineChart.notifyDataSetChanged();
+        lineChart.invalidate();
+
     }
 }

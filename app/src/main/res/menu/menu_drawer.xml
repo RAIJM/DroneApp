@@ -7,6 +7,10 @@
         <item
             android:id="@+id/attitude"
             android:title="Attitude" />
+
+        <item
+            android:id="@+id/bearing"
+            android:title="Bearing"/>
         <item
             android:id="@+id/altitude"
             android:title="Altitude" />

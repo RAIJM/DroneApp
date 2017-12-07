@@ -36,15 +36,12 @@ public class AttitudeFragment extends Fragment {
     private double pitch;
     private double roll;
     private double yaw;
-
-    LineDataSet pitchDataset;
-    LineDataSet rollDataset;
-    LineDataSet yawDataset;
-    TextView tvPitch;
-    TextView tvRoll;
-    TextView tvHeading;
-    ArrayList<ILineDataSet> lines;
-    LineData lineData;
+    private LineDataSet pitchDataset;
+    private LineDataSet rollDataset;
+    private TextView tvPitch;
+    private  TextView tvRoll;
+    private ArrayList<ILineDataSet> lines;
+    private LineData lineData;
 
 
     public AttitudeFragment()
@@ -63,7 +60,7 @@ public class AttitudeFragment extends Fragment {
 
         tvPitch = (TextView) view.findViewById(R.id.pitch);
         tvRoll = (TextView) view.findViewById(R.id.roll);
-        tvHeading = (TextView) view.findViewById(R.id.att_heading);
+
 
 
         YAxis yAxis = lineChart.getAxisLeft();
@@ -103,21 +100,11 @@ public class AttitudeFragment extends Fragment {
         String[] xAxis = new String[] {"1", "2", "3", "4", "5","6"};
         pitchDataset = new LineDataSet(entries, "Pitch");
         pitchDataset.setColor(Color.parseColor("#00ff00"));
-
-
-
-        //lDataSet1.setDrawFilled(true);
         lines.add(pitchDataset);
 
         rollDataset = new LineDataSet(entry, "Roll");
         rollDataset.setColor(Color.parseColor("#0000ff"));
-        //lDataSet2.setDrawFilled(true);
         lines.add(rollDataset);
-
-        yawDataset= new LineDataSet(entry2, "Heading");
-        yawDataset.setColor(Color.parseColor("#ff0000"));
-        //lDataSet2.setDrawFilled(true);
-        lines.add(yawDataset);
 
         lineData = new LineData(lines);
         lineChart.setData(lineData);
@@ -140,12 +127,10 @@ public class AttitudeFragment extends Fragment {
 
         tvPitch.setText(pitch+"");
         tvRoll.setText(roll+"");
-        tvHeading.setText(yaw+"");
 
 
         pitchDataset.addEntry(new Entry(step,(float)pitch));
         rollDataset.addEntry(new Entry(step,(float)roll));
-        yawDataset.addEntry(new Entry(step,(float)yaw));
 
         lineData.notifyDataChanged();
         lineChart.notifyDataSetChanged();

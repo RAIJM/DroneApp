@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_centerHorizontal="true"
+        android:id="@+id/bearing"
+        android:paddingTop="48dp"
+        android:text="120"
+        android:textColor="#000000"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <com.gospelware.compassviewlib.CompassView
+        xmlns:compass="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/compass"
+        android:layout_below="@+id/cv"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerInParent="true"
+        compass:circleColor="#222222"
+        compass:ringColor="#C10039"
+        compass:pointerDrawable="@drawable/pointer"
+        compass:pointerRotation="0"
+        compass:showRing="true" />
+
+</RelativeLayout>

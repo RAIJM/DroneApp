@@ -44,7 +44,7 @@
                 android:orientation="horizontal">
                 <TextView
 
-                    android:text="Dist Above Ground:"
+                    android:text="Height:"
                     android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
