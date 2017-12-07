@@ -23,6 +23,8 @@ import com.rainjm.droneapp.fragments.AttitudeFragment;
 import com.rainjm.droneapp.fragments.GpsFragment;
 import com.rainjm.droneapp.fragments.PIDFragment;
 import com.rainjm.droneapp.fragments.RecieverFragment;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -53,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
     private PIDFragment pidFragment;
     private int step = 0;
     private ActionBar mActionBar;
-
+    private boolean update_receiver = false;
+    private boolean update_altitude = false;
+    private boolean isConnected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,13 +66,18 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
         initFragments();
 
         setUpBluetooth();
 
+
         setUpActionBar();
 
         initNavDrawer();
+
+
 
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment,  new AttitudeFragment())
@@ -130,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initNavDrawer()
     {
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_drawer);
 
@@ -144,35 +153,51 @@ public class MainActivity extends AppCompatActivity {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,altitudeFragment)
                                 .commit();
-                        mActionBar.setTitle("Altitude");
+                        if(isConnected)
+                            mActionBar.setTitle("Altitude (Connected)");
+                        else
+                            mActionBar.setTitle("Altitude (Disconnected)");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.attitude:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,  atitudeFragment)
                                 .commit();
-                        mActionBar.setTitle("Attitude");
+                        if(isConnected)
+                            mActionBar.setTitle("Attitude (Connected)");
+                        else
+                            mActionBar.setTitle("Attitude (Disconnected)");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.gps:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment,gpsFragment)
                                 .commit();
-                        mActionBar.setTitle("GPS");
+                        if(isConnected)
+                            mActionBar.setTitle("GPS (Connected");
+                        else
+                            mActionBar.setTitle("GPS (Disconnected)");
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.reciever:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment, recieverFragment)
                                 .commit();
-                        mActionBar.setTitle("Receiver");
+                        if(isConnected)
+                            mActionBar.setTitle("Receiver (Connected)");
+                        else
+                            mActionBar.setTitle("Reciever (Disconnected)");
                         drawerLayout.closeDrawers();
+                        update_receiver = true;
                         return true;
                     case R.id.pid:
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.fragment, pidFragment)
                                 .commit();
-                        mActionBar.setTitle("PID");
+                        if(isConnected)
+                            mActionBar.setTitle("PID (Connected)");
+                        else
+                            mActionBar.setTitle("PID (Disconnected)");
                         drawerLayout.closeDrawers();
                         return true;
 
@@ -196,6 +221,8 @@ public class MainActivity extends AppCompatActivity {
                 mmSocket.connect();
                 mmOutputStream = mmSocket.getOutputStream();
                 mmInputStream = mmSocket.getInputStream();
+                mActionBar.setTitle(mActionBar.getTitle()+"(Connected)");
+                isConnected = true;
                 processHandler();
             }catch (IOException io){
                 Toast.makeText(this,"Error connecting",Toast.LENGTH_SHORT).show();
@@ -223,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
                             for(int i=0;i<bytesAvailable;i++)
                             {
                                 byte b = packetBytes[i];
+
                                 if(b == delimiter)
                                 {
                                     byte[] encodedBytes = new byte[readBufferPosition];
@@ -233,11 +261,32 @@ public class MainActivity extends AppCompatActivity {
                                     {
                                         public void run()
                                         {
-                                            Map<String,String> dataMap = parseData(data,step);
-                                            atitudeFragment.update_data(dataMap);
-                                            altitudeFragment.update_data(dataMap);
-                                            gpsFragment.update_data(dataMap);
-                                            recieverFragment.update_data(dataMap);
+                                            boolean worked = true;
+                                            Map<String,String> dataMap = new HashMap<String, String>();
+                                            try{
+                                                dataMap = parseData(data,step);
+                                                //atitudeFragment.update_data(dataMap);
+                                                //altitudeFragment.update_data(dataMap);
+                                                //gpsFragment.update_data(dataMap);
+
+
+                                            }catch (Exception e){
+                                                worked = false;
+                                                Log.d("Wow:",e.getMessage());
+                                            }
+
+                                            if(worked) {
+
+                                                atitudeFragment.update_data(dataMap);
+
+                                                if(update_receiver)
+                                                    recieverFragment.update_data(dataMap);
+                                                if(update_altitude)
+                                                    altitudeFragment.update_data(dataMap);
+
+
+                                            }
+
 
 
                                            // myLabel.setText(data);
@@ -275,6 +324,8 @@ public class MainActivity extends AppCompatActivity {
         {
             try{
                 mmSocket.close();
+                isConnected = false;
+                //mActionBar.setTitle("Disconnected");
             }catch (IOException i){
                 Log.d("Disconnect error",i.getMessage());
             }
@@ -286,16 +337,17 @@ public class MainActivity extends AppCompatActivity {
     {
         Map<String,String> dataMap = new HashMap<>();
         String dataArr[] = data.split(" ");
+        Log.d("Data:",data);
         dataMap.put("attitude_pitch",dataArr[0]);
         dataMap.put("attitude_roll",dataArr[1]);
         dataMap.put("attitude_yaw",dataArr[2]);
         dataMap.put("throttle",dataArr[3]);
-        dataMap.put("roll",dataArr[4]);
-        dataMap.put("pitch",dataArr[5]);
+        dataMap.put("pitch",dataArr[4]);
+        dataMap.put("roll",dataArr[5]);
         dataMap.put("yaw",dataArr[6]);
         dataMap.put("altitude",dataArr[7]);
-        dataMap.put("latitude",dataArr[8]);
-        dataMap.put("longitude",dataArr[9]);
+//        dataMap.put("latitude",dataArr[8]);
+//        dataMap.put("longitude",dataArr[9]);
         dataMap.put("step",String.valueOf(step));
 
 

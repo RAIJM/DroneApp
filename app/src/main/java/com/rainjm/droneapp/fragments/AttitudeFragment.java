@@ -8,13 +8,18 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.rainjm.droneapp.R;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -35,12 +40,18 @@ public class AttitudeFragment extends Fragment {
     LineDataSet pitchDataset;
     LineDataSet rollDataset;
     LineDataSet yawDataset;
+    TextView tvPitch;
+    TextView tvRoll;
+    TextView tvHeading;
+    ArrayList<ILineDataSet> lines;
+    LineData lineData;
 
 
     public AttitudeFragment()
     {
 
     }
+
 
     private View view;
     @Nullable
@@ -49,6 +60,19 @@ public class AttitudeFragment extends Fragment {
         view = inflater.inflate(R.layout.frag_attitude,container,false);
 
         lineChart = view.findViewById(R.id.line_graph);
+
+        tvPitch = (TextView) view.findViewById(R.id.pitch);
+        tvRoll = (TextView) view.findViewById(R.id.roll);
+        tvHeading = (TextView) view.findViewById(R.id.att_heading);
+
+
+        YAxis yAxis = lineChart.getAxisLeft();
+        yAxis.setAxisMaximum(30);
+        yAxis.setAxisMinimum(-30);
+        yAxis.setGranularity(-30);
+        LimitLine ll = new LimitLine(0f);
+        yAxis.addLimitLine(ll);
+
 
 
         ArrayList<Entry> entries = new ArrayList<>();
@@ -75,15 +99,17 @@ public class AttitudeFragment extends Fragment {
         entry2.add(new Entry(4, 15f));
         entry2.add(new Entry(5, 10f));
 
-        ArrayList<ILineDataSet> lines = new ArrayList<ILineDataSet> ();
+        lines = new ArrayList<ILineDataSet> ();
         String[] xAxis = new String[] {"1", "2", "3", "4", "5","6"};
-        pitchDataset = new LineDataSet(entries, "Roll");
+        pitchDataset = new LineDataSet(entries, "Pitch");
         pitchDataset.setColor(Color.parseColor("#00ff00"));
+
+
 
         //lDataSet1.setDrawFilled(true);
         lines.add(pitchDataset);
 
-        rollDataset = new LineDataSet(entry, "Pitch");
+        rollDataset = new LineDataSet(entry, "Roll");
         rollDataset.setColor(Color.parseColor("#0000ff"));
         //lDataSet2.setDrawFilled(true);
         lines.add(rollDataset);
@@ -93,7 +119,8 @@ public class AttitudeFragment extends Fragment {
         //lDataSet2.setDrawFilled(true);
         lines.add(yawDataset);
 
-        lineChart.setData(new LineData(lines));
+        lineData = new LineData(lines);
+        lineChart.setData(lineData);
         lineChart.animateY(5000);
 
 
@@ -111,10 +138,18 @@ public class AttitudeFragment extends Fragment {
 
         int step = Integer.valueOf(dataMap.get("step"));
 
+        tvPitch.setText(pitch+"");
+        tvRoll.setText(roll+"");
+        tvHeading.setText(yaw+"");
+
 
         pitchDataset.addEntry(new Entry(step,(float)pitch));
         rollDataset.addEntry(new Entry(step,(float)roll));
         yawDataset.addEntry(new Entry(step,(float)yaw));
+
+        lineData.notifyDataChanged();
+        lineChart.notifyDataSetChanged();
+        lineChart.invalidate();
 
     }
 }

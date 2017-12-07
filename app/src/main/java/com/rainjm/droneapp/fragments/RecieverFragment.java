@@ -6,9 +6,12 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -27,6 +30,11 @@ public class RecieverFragment extends Fragment {
 
     private View view;
     private BarChart barChart;
+    TextView tvThrottle;
+    TextView tvPitch;
+    TextView tvRoll;
+    TextView tvYaw;
+    BarDataSet dataset;
 
     public RecieverFragment()
     {
@@ -39,6 +47,16 @@ public class RecieverFragment extends Fragment {
 
         barChart = view.findViewById(R.id.bar_graph);
 
+        tvThrottle = (TextView) view.findViewById(R.id.throttle);
+        tvPitch = (TextView) view.findViewById(R.id.pitch);
+        tvRoll =(TextView) view.findViewById(R.id.roll);
+        tvYaw = (TextView) view.findViewById(R.id.yaw);
+
+        YAxis yAxis = barChart.getAxisLeft();
+        yAxis.setAxisMaximum(2000);
+        yAxis.setAxisMinimum(1000);
+        yAxis.setGranularity(1000);
+
         ArrayList<BarEntry> entries = new ArrayList<>();
         entries.add(new BarEntry(0, 1700f));
         entries.add(new BarEntry(1, 2000));
@@ -48,7 +66,7 @@ public class RecieverFragment extends Fragment {
 
 
 
-        BarDataSet dataset = new BarDataSet(entries, "# of Calls");
+        dataset = new BarDataSet(entries, "# of Calls");
 
 
         //LimitLine line = new LimitLine(10f);
@@ -78,14 +96,22 @@ public class RecieverFragment extends Fragment {
         float pitch = Float.valueOf(dataMap.get("pitch"));
         float yaw = Float.valueOf(dataMap.get("yaw"));
 
+        tvThrottle.setText((int)throttle+"");
+        tvRoll.setText((int)roll+"");
+        tvPitch.setText((int)pitch+"");
+        tvYaw.setText((int)yaw+"");
+
         ArrayList<BarEntry> entries = new ArrayList<>();
         entries.add(new BarEntry(0, throttle));
-        entries.add(new BarEntry(1, roll));
-        entries.add(new BarEntry(2, pitch));
+        entries.add(new BarEntry(1, pitch));
+        entries.add(new BarEntry(2, roll));
         entries.add(new BarEntry(3, yaw));
 
-        BarDataSet dataset = new BarDataSet(entries, "# of Calls");
-        BarData data = new BarData(dataset);
-        barChart.setData(data);
+        BarDataSet set1 = (BarDataSet) barChart.getData().getDataSetByIndex(0);
+        set1.setValues(entries);
+        barChart.getData().notifyDataChanged();
+        barChart.notifyDataSetChanged();
+        barChart.invalidate();
+
     }
 }
