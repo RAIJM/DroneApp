@@ -58,8 +58,8 @@ public class AttitudeFragment extends Fragment {
 
         lineChart = view.findViewById(R.id.line_graph);
 
-        tvPitch = (TextView) view.findViewById(R.id.pitch);
-        tvRoll = (TextView) view.findViewById(R.id.roll);
+        tvPitch = (TextView) view.findViewById(R.id.att_pitch);
+        tvRoll = (TextView) view.findViewById(R.id.att_roll);
 
 
 
@@ -121,7 +121,6 @@ public class AttitudeFragment extends Fragment {
     {
         pitch = Double.parseDouble(dataMap.get("attitude_pitch"));
         roll = Double.parseDouble(dataMap.get("attitude_roll"));
-        yaw = Double.parseDouble(dataMap.get("attitude_yaw"));
 
         int step = Integer.valueOf(dataMap.get("step"));
 

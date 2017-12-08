@@ -8,6 +8,7 @@ import android.support.v4.app.ShareCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.LimitLine;
@@ -33,6 +34,8 @@ public class AltitudeFragment extends Fragment {
     private LineDataSet heightDataset;
     private LineData lineData;
     private float desired_height = 3.0f;
+    private TextView tvAltitude;
+    private TextView tvHeight;
 
     public AltitudeFragment()
     {
@@ -42,6 +45,10 @@ public class AltitudeFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.frag_altitude,container,false);
+
+
+        tvAltitude = (TextView) view.findViewById(R.id.tv_altitude);
+        tvHeight = (TextView) view.findViewById(R.id.tv_height);
 
         lineChart = view.findViewById(R.id.line_graph);
 
@@ -93,6 +100,9 @@ public class AltitudeFragment extends Fragment {
         float altitude = Float.valueOf(dataMap.get("altitude"));
         float height = Float.valueOf(dataMap.get("height"));
         int step = Integer.valueOf(dataMap.get("step"));
+
+        tvAltitude.setText(altitude+"m");
+        tvHeight.setText(height+"m");
 
         altDataset.addEntry(new Entry(step,altitude));
         heightDataset.addEntry(new Entry(step,height));

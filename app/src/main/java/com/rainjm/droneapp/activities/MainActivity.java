@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private ActionBar mActionBar;
     private boolean update_receiver = false;
     private boolean update_altitude = false;
+    private boolean update_attitude = false;
     private boolean isConnected = false;
 
     @Override
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment,  new AttitudeFragment())
+                .replace(R.id.fragment,  atitudeFragment)
                 .commit();
 
     }
@@ -90,11 +91,38 @@ public class MainActivity extends AppCompatActivity {
     private void initFragments()
     {
         atitudeFragment = new AttitudeFragment();
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .attach(atitudeFragment)
+                .commit();
+
         altitudeFragment = new AltitudeFragment();
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .attach(altitudeFragment)
+                .commit();
         gpsFragment = new GpsFragment();
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .attach(gpsFragment)
+                .commit();
         recieverFragment = new RecieverFragment();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .attach(recieverFragment)
+                .commit();
+
         pidFragment = new PIDFragment();
         bearingFragment = new BearingFragment();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .attach(bearingFragment)
+                .commit();
+
+
     }
 
 
@@ -161,6 +189,7 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("Altitude (Disconnected)");
                         drawerLayout.closeDrawers();
+                        update_altitude = true;
                         return true;
                     case R.id.attitude:
                         getSupportFragmentManager().beginTransaction()
@@ -170,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
                             mActionBar.setTitle("Attitude (Connected)");
                         else
                             mActionBar.setTitle("Attitude (Disconnected)");
+                        update_attitude = true;
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.bearing:
@@ -234,7 +264,10 @@ public class MainActivity extends AppCompatActivity {
                 mmSocket.connect();
                 mmOutputStream = mmSocket.getOutputStream();
                 mmInputStream = mmSocket.getInputStream();
-                mActionBar.setTitle(mActionBar.getTitle()+"(Connected)");
+                CharSequence title = mActionBar.getTitle();
+                String s = title.toString();
+                String sub = s.substring(0,s.indexOf("("));
+                mActionBar.setTitle(sub+"(Connected)");
                 isConnected = true;
                 processHandler();
             }catch (IOException io){
@@ -286,12 +319,14 @@ public class MainActivity extends AppCompatActivity {
 
                                             if(worked) {
 
+                                                //if(update_attitude)
                                                 atitudeFragment.update_data(dataMap);
-
-                                                if(update_receiver)
-                                                    recieverFragment.update_data(dataMap);
-                                                if(update_altitude)
-                                                    altitudeFragment.update_data(dataMap);
+                                                //if(update_receiver)
+                                                recieverFragment.update_data(dataMap);
+                                                //if(update_altitude)
+                                                altitudeFragment.update_data(dataMap);
+                                                bearingFragment.update_data(dataMap);
+                                                gpsFragment.update_data(dataMap);
 
 
                                             }
@@ -331,7 +366,10 @@ public class MainActivity extends AppCompatActivity {
             try{
                 mmSocket.close();
                 isConnected = false;
-                //mActionBar.setTitle("Disconnected");
+                CharSequence title = mActionBar.getTitle();
+                String s = title.toString();
+                String sub = s.substring(0,s.indexOf("("));
+                mActionBar.setTitle(sub+"(Disconnected)");
             }catch (IOException i){
                 Log.d("Disconnect error",i.getMessage());
             }
@@ -353,8 +391,8 @@ public class MainActivity extends AppCompatActivity {
         dataMap.put("yaw",dataArr[6]);
         dataMap.put("altitude",dataArr[7]);
         dataMap.put("height",dataArr[8]);
-        dataMap.put("latitude",dataArr[8]);
-        dataMap.put("longitude",dataArr[9]);
+        dataMap.put("latitude",dataArr[9]);
+        dataMap.put("longitude",dataArr[10]);
         dataMap.put("step",String.valueOf(step));
 
         return dataMap;
