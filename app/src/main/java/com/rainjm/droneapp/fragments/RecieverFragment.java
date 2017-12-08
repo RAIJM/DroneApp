@@ -91,27 +91,33 @@ public class RecieverFragment extends Fragment {
 
     public void update_data(Map<String,String> dataMap)
     {
-        float throttle = Float.valueOf(dataMap.get("throttle"));
-        float roll = Float.valueOf(dataMap.get("roll"));
-        float pitch = Float.valueOf(dataMap.get("pitch"));
-        float yaw = Float.valueOf(dataMap.get("yaw"));
 
-        tvThrottle.setText((int)throttle+"");
-        tvRoll.setText((int)roll+"");
-        tvPitch.setText((int)pitch+"");
-        tvYaw.setText((int)yaw+"");
+        try{
+            float throttle = Float.valueOf(dataMap.get("throttle"));
+            float roll = Float.valueOf(dataMap.get("roll"));
+            float pitch = Float.valueOf(dataMap.get("pitch"));
+            float yaw = Float.valueOf(dataMap.get("yaw"));
 
-        ArrayList<BarEntry> entries = new ArrayList<>();
-        entries.add(new BarEntry(0, throttle));
-        entries.add(new BarEntry(1, pitch));
-        entries.add(new BarEntry(2, roll));
-        entries.add(new BarEntry(3, yaw));
+            tvThrottle.setText((int)throttle+"");
+            tvRoll.setText((int)roll+"");
+            tvPitch.setText((int)pitch+"");
+            tvYaw.setText((int)yaw+"");
 
-        BarDataSet set1 = (BarDataSet) barChart.getData().getDataSetByIndex(0);
-        set1.setValues(entries);
-        barChart.getData().notifyDataChanged();
-        barChart.notifyDataSetChanged();
-        barChart.invalidate();
+            ArrayList<BarEntry> entries = new ArrayList<>();
+            entries.add(new BarEntry(0, throttle));
+            entries.add(new BarEntry(1, pitch));
+            entries.add(new BarEntry(2, roll));
+            entries.add(new BarEntry(3, yaw));
+
+            BarDataSet set1 = (BarDataSet) barChart.getData().getDataSetByIndex(0);
+            set1.setValues(entries);
+            barChart.getData().notifyDataChanged();
+            barChart.notifyDataSetChanged();
+            barChart.invalidate();
+        }catch (Exception e){
+
+        }
+
 
     }
 }

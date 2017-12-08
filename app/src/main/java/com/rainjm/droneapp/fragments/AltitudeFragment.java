@@ -53,20 +53,20 @@ public class AltitudeFragment extends Fragment {
         lineChart = view.findViewById(R.id.line_graph);
 
         ArrayList<Entry> entries = new ArrayList<>();
-        entries.add(new Entry(0,4f));
-        entries.add(new Entry(1,8f));
-        entries.add(new Entry(2,6f));
-        entries.add(new Entry(3,10f));
-        entries.add(new Entry(4,18f));
-        entries.add(new Entry(5,9f));
+        entries.add(new Entry(0,0f));
+//        entries.add(new Entry(1,8f));
+//        entries.add(new Entry(2,6f));
+//        entries.add(new Entry(3,10f));
+//        entries.add(new Entry(4,18f));
+//        entries.add(new Entry(5,9f));
 
         ArrayList<Entry> entry = new ArrayList<>();
-        entry.add(new Entry(0,3f));
-        entry.add(new Entry(1,10f));
-        entry.add(new Entry(2,4f));
-        entry.add(new Entry(3, 14f));
-        entry.add(new Entry(4, 12f));
-        entry.add(new Entry(5, 5f));
+        entry.add(new Entry(0,0f));
+//        entry.add(new Entry(1,10f));
+//        entry.add(new Entry(2,4f));
+//        entry.add(new Entry(3, 14f));
+//        entry.add(new Entry(4, 12f));
+//        entry.add(new Entry(5, 5f));
 
         YAxis yAxis = lineChart.getAxisLeft();
         LimitLine ll = new LimitLine(desired_height);
@@ -97,19 +97,24 @@ public class AltitudeFragment extends Fragment {
 
     public void update_data(Map<String,String> dataMap)
     {
-        float altitude = Float.valueOf(dataMap.get("altitude"));
-        float height = Float.valueOf(dataMap.get("height"));
-        int step = Integer.valueOf(dataMap.get("step"));
+        try{
+            float altitude = Float.valueOf(dataMap.get("altitude"));
+            float height = Float.valueOf(dataMap.get("height"));
+            int step = Integer.valueOf(dataMap.get("step"));
 
-        tvAltitude.setText(altitude+"m");
-        tvHeight.setText(height+"m");
+            tvAltitude.setText(altitude+"m");
+            tvHeight.setText(height+"m");
 
-        altDataset.addEntry(new Entry(step,altitude));
-        heightDataset.addEntry(new Entry(step,height));
+            altDataset.addEntry(new Entry(step,altitude));
+            heightDataset.addEntry(new Entry(step,height));
 
-        lineData.notifyDataChanged();
-        lineChart.notifyDataSetChanged();
-        lineChart.invalidate();
+            lineData.notifyDataChanged();
+            lineChart.notifyDataSetChanged();
+            lineChart.invalidate();
+        }catch (Exception e){
+
+        }
+
 
     }
 }

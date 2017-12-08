@@ -50,9 +50,15 @@ public class BearingFragment extends Fragment {
 
     public void update_data(Map<String,String> dataMap)
     {
-        int bearing = Integer.valueOf(dataMap.get("bearing"));
 
-        tvBearing.setText(bearing+"" + (char) 0x00B0);
-        compassView.setRotation(bearing);
+        try{
+            int bearing = Integer.valueOf(dataMap.get("bearing"));
+
+            tvBearing.setText(bearing+"" + (char) 0x00B0);
+            compassView.setRotation(bearing);
+        }catch (Exception e){
+
+        }
+
     }
 }

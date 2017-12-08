@@ -95,13 +95,19 @@ public class GpsFragment extends Fragment{
 
     public void update_data(Map<String,String> dataMap)
     {
-        float latitude = Float.valueOf(dataMap.get("latitude"));
-        float longitude = Float.valueOf(dataMap.get("longitude"));
 
-        tvLat.setText(latitude+"");
-        tvLng.setText(longitude+"");
+        try{
+            float latitude = Float.valueOf(dataMap.get("latitude"));
+            float longitude = Float.valueOf(dataMap.get("longitude"));
 
-        droneMarker.setPosition(new LatLng(latitude,longitude));
+            tvLat.setText(latitude+"");
+            tvLng.setText(longitude+"");
+
+            droneMarker.setPosition(new LatLng(latitude,longitude));
+
+        }catch (Exception e){
+
+        }
 
     }
 }

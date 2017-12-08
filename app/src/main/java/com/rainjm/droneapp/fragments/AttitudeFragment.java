@@ -73,28 +73,21 @@ public class AttitudeFragment extends Fragment {
 
 
         ArrayList<Entry> entries = new ArrayList<>();
-        entries.add(new Entry(0,4f));
-        entries.add(new Entry(1,8f));
-        entries.add(new Entry(2,6f));
-        entries.add(new Entry(3,10f));
-        entries.add(new Entry(4,18f));
-        entries.add(new Entry(5,9f));
+        entries.add(new Entry(0,0f));
+//        entries.add(new Entry(1,8f));
+//        entries.add(new Entry(2,6f));
+//        entries.add(new Entry(3,10f));
+//        entries.add(new Entry(4,18f));
+//        entries.add(new Entry(5,9f));
 
         ArrayList<Entry> entry = new ArrayList<>();
-        entry.add(new Entry(0,3f));
-        entry.add(new Entry(1,10f));
-        entry.add(new Entry(2,4f));
-        entry.add(new Entry(3, 14f));
-        entry.add(new Entry(4, 12f));
-        entry.add(new Entry(5, 5f));
+        entry.add(new Entry(0,0f));
+//        entry.add(new Entry(1,10f));
+//        entry.add(new Entry(2,4f));
+//        entry.add(new Entry(3, 14f));
+//        entry.add(new Entry(4, 12f));
+//        entry.add(new Entry(5, 5f));
 
-        ArrayList<Entry> entry2 = new ArrayList<>();
-        entry2.add(new Entry(0,3f));
-        entry2.add(new Entry(1,5f));
-        entry2.add(new Entry(2,7f));
-        entry2.add(new Entry(3, 12f));
-        entry2.add(new Entry(4, 15f));
-        entry2.add(new Entry(5, 10f));
 
         lines = new ArrayList<ILineDataSet> ();
         String[] xAxis = new String[] {"1", "2", "3", "4", "5","6"};
@@ -119,21 +112,26 @@ public class AttitudeFragment extends Fragment {
 
     public void update_data(Map<String,String> dataMap)
     {
-        pitch = Double.parseDouble(dataMap.get("attitude_pitch"));
-        roll = Double.parseDouble(dataMap.get("attitude_roll"));
+        try{
+            pitch = Double.parseDouble(dataMap.get("attitude_pitch"));
+            roll = Double.parseDouble(dataMap.get("attitude_roll"));
 
-        int step = Integer.valueOf(dataMap.get("step"));
+            int step = Integer.valueOf(dataMap.get("step"));
 
-        tvPitch.setText(pitch+"");
-        tvRoll.setText(roll+"");
+            tvPitch.setText(pitch+"");
+            tvRoll.setText(roll+"");
 
 
-        pitchDataset.addEntry(new Entry(step,(float)pitch));
-        rollDataset.addEntry(new Entry(step,(float)roll));
+            pitchDataset.addEntry(new Entry(step,(float)pitch));
+            rollDataset.addEntry(new Entry(step,(float)roll));
 
-        lineData.notifyDataChanged();
-        lineChart.notifyDataSetChanged();
-        lineChart.invalidate();
+            lineData.notifyDataChanged();
+            lineChart.notifyDataSetChanged();
+            lineChart.invalidate();
+        }catch (Exception e){
+
+        }
+
 
     }
 }

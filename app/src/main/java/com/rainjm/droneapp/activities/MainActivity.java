@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -81,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
         initNavDrawer();
 
 
-
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment,  atitudeFragment)
                 .commit();
@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
 
         pidFragment = new PIDFragment();
+
         bearingFragment = new BearingFragment();
         getSupportFragmentManager()
                 .beginTransaction()
@@ -189,7 +190,6 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("Altitude (Disconnected)");
                         drawerLayout.closeDrawers();
-                        update_altitude = true;
                         return true;
                     case R.id.attitude:
                         getSupportFragmentManager().beginTransaction()
@@ -199,7 +199,6 @@ public class MainActivity extends AppCompatActivity {
                             mActionBar.setTitle("Attitude (Connected)");
                         else
                             mActionBar.setTitle("Attitude (Disconnected)");
-                        update_attitude = true;
                         drawerLayout.closeDrawers();
                         return true;
                     case R.id.bearing:
@@ -231,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("Receiver (Disconnected)");
                         drawerLayout.closeDrawers();
-                        update_receiver = true;
                         return true;
                     case R.id.pid:
                         getSupportFragmentManager().beginTransaction()
@@ -264,10 +262,10 @@ public class MainActivity extends AppCompatActivity {
                 mmSocket.connect();
                 mmOutputStream = mmSocket.getOutputStream();
                 mmInputStream = mmSocket.getInputStream();
-                CharSequence title = mActionBar.getTitle();
-                String s = title.toString();
-                String sub = s.substring(0,s.indexOf("("));
-                mActionBar.setTitle(sub+"(Connected)");
+//                CharSequence title = mActionBar.getTitle();
+//                String s = title.toString();
+//                String sub = s.substring(0,s.indexOf("("));
+//                mActionBar.setTitle(sub+"(Connected)");
                 isConnected = true;
                 processHandler();
             }catch (IOException io){
@@ -319,11 +317,9 @@ public class MainActivity extends AppCompatActivity {
 
                                             if(worked) {
 
-                                                //if(update_attitude)
+
                                                 atitudeFragment.update_data(dataMap);
-                                                //if(update_receiver)
                                                 recieverFragment.update_data(dataMap);
-                                                //if(update_altitude)
                                                 altitudeFragment.update_data(dataMap);
                                                 bearingFragment.update_data(dataMap);
                                                 gpsFragment.update_data(dataMap);
