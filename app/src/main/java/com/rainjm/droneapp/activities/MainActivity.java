@@ -1,5 +1,6 @@
 package com.rainjm.droneapp.activities;
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.TimeUtils;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -17,7 +19,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.rainjm.droneapp.R;
 import com.rainjm.droneapp.fragments.AltitudeFragment;
 import com.rainjm.droneapp.fragments.AttitudeFragment;
@@ -58,10 +63,11 @@ public class MainActivity extends AppCompatActivity {
     private BearingFragment bearingFragment;
     private int step = 0;
     private ActionBar mActionBar;
-    private boolean update_receiver = false;
-    private boolean update_altitude = false;
-    private boolean update_attitude = false;
     private boolean isConnected = false;
+    private Fragment currentFragment;
+    private ConnectedThread connectedThread;
+    ProgressDialog progressDialog;
+    boolean reading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +77,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage("Updating...");
+
 
         initFragments();
 
@@ -190,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("Altitude (Disconnected)");
                         drawerLayout.closeDrawers();
+                        currentFragment = altitudeFragment;
                         return true;
                     case R.id.attitude:
                         getSupportFragmentManager().beginTransaction()
@@ -200,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("Attitude (Disconnected)");
                         drawerLayout.closeDrawers();
+                        currentFragment =atitudeFragment;
                         return true;
                     case R.id.bearing:
                         getSupportFragmentManager().beginTransaction()
@@ -210,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("Bearing (Disconnected)");
                         drawerLayout.closeDrawers();
+                        currentFragment = bearingFragment;
                         return true;
                     case R.id.gps:
                         getSupportFragmentManager().beginTransaction()
@@ -230,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("Receiver (Disconnected)");
                         drawerLayout.closeDrawers();
+                        currentFragment = gpsFragment;
                         return true;
                     case R.id.pid:
                         getSupportFragmentManager().beginTransaction()
@@ -240,6 +254,7 @@ public class MainActivity extends AppCompatActivity {
                         else
                             mActionBar.setTitle("PID (Disconnected)");
                         drawerLayout.closeDrawers();
+                        currentFragment = pidFragment;
                         return true;
 
                 }
@@ -260,14 +275,19 @@ public class MainActivity extends AppCompatActivity {
             try{
                 mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
                 mmSocket.connect();
-                mmOutputStream = mmSocket.getOutputStream();
-                mmInputStream = mmSocket.getInputStream();
-//                CharSequence title = mActionBar.getTitle();
-//                String s = title.toString();
-//                String sub = s.substring(0,s.indexOf("("));
-//                mActionBar.setTitle(sub+"(Connected)");
+                connectedThread = new ConnectedThread(mmSocket);
+                connectedThread.start();
                 isConnected = true;
-                processHandler();
+                CharSequence title = mActionBar.getTitle();
+                String s = title.toString();
+                int index = s.indexOf("(");
+                if(index!=-1) {
+                    String sub = s.substring(0,s.indexOf("("));
+                    mActionBar.setTitle(sub+"(Connected)");
+                }else{
+                    mActionBar.setTitle(s+"(Connected)");
+                }
+                //processHandler();
             }catch (IOException io){
                 Toast.makeText(this,"Error connecting",Toast.LENGTH_SHORT).show();
             }
@@ -275,85 +295,127 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void processHandler()
+
+    private class ConnectedThread extends Thread
     {
+        private InputStream mmInputStream = null;
+        private OutputStream mmOutputStream = null;
         final Handler handler = new Handler();
-        workerThread = new Thread(new Runnable()
+
+        public ConnectedThread(BluetoothSocket socket)
         {
-            public void run()
+            try{
+                mmInputStream = socket.getInputStream();
+                mmOutputStream = socket.getOutputStream();
+            }catch (IOException io){
+                Log.d("Exception",io.getMessage());
+            }
+        }
+
+        @Override
+        public void run()
+        {
+            while (!Thread.currentThread().isInterrupted() && !stopWorker)
             {
-                while(!Thread.currentThread().isInterrupted() && !stopWorker)
+                try
                 {
-                    try{
+                    if(!reading)
+                    {
                         int bytesAvailable = mmInputStream.available();
-                        if(bytesAvailable > 0)
-                        {
+                        if (bytesAvailable > 0) {
                             byte[] packetBytes = new byte[bytesAvailable];
                             mmInputStream.read(packetBytes);
 
-                            for(int i=0;i<bytesAvailable;i++)
-                            {
+                            for (int i = 0; i < bytesAvailable; i++) {
                                 byte b = packetBytes[i];
 
-                                if(b == delimiter)
-                                {
+                                if (b == delimiter) {
                                     byte[] encodedBytes = new byte[readBufferPosition];
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
 
-                                    handler.post(new Runnable()
-                                    {
-                                        public void run()
-                                        {
+                                    handler.post(new Runnable() {
+                                        public void run() {
                                             boolean worked = true;
-                                            Map<String,String> dataMap = new HashMap<String, String>();
-                                            try{
-                                                dataMap = parseData(data,step);
+                                            Map<String, String> dataMap = new HashMap<String, String>();
+                                            try {
+                                                dataMap = parseData(data, step);
 
-                                            }catch (Exception e){
+                                            } catch (Exception e) {
                                                 worked = false;
-                                                Log.d("Wow:",e.getMessage());
+                                                Log.d("Wow:", e.getMessage());
                                             }
-
-                                            if(worked) {
-
-
+                                            if (worked) {
                                                 atitudeFragment.update_data(dataMap);
                                                 recieverFragment.update_data(dataMap);
                                                 altitudeFragment.update_data(dataMap);
                                                 bearingFragment.update_data(dataMap);
                                                 gpsFragment.update_data(dataMap);
-
-
                                             }
-
                                         }
                                     });
                                     readBufferPosition = 0;
-                                    step+=1;
-
-                                    //The variable data now contains our full command
-                                }
-                                else
-                                {
+                                    step += 1;
+                                } else {
                                     readBuffer[readBufferPosition++] = b;
                                 }
+                                //The variable data now contains our full command
                             }
                         }
+                    }
 
 
-                    }catch (IOException io){
+                } catch (IOException io) {
 
-                    }catch (ArrayIndexOutOfBoundsException a){
-                        Log.d("Error",a.getMessage());
-                        //Toast.makeText(mContext,a.getMessage(),Toast.LENGTH_SHORT).show();
+                } catch (ArrayIndexOutOfBoundsException a) {
+                    Log.d("Error", a.getMessage());
+                    //Toast.makeText(mContext,a.getMessage(),Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+
+        public void write(String data)
+        {
+            boolean writing = true;
+            boolean write_again = true;
+            try {
+                reading = true;
+                long startTime = System.currentTimeMillis();
+                while(writing) {
+                    if(write_again) {
+                        //Thread.currentThread().interrupt();
+                        mmOutputStream.write(data.getBytes());
+                        write_again = false;
+                    }
+                    if((System.currentTimeMillis() - startTime) > 50) {
+                        int bytesAvailable = mmInputStream.available();
+                        if (bytesAvailable > 0) {
+                            byte[] packetBytes = new byte[bytesAvailable];
+                            mmInputStream.read(packetBytes);
+
+                            for (int i = 0; i < bytesAvailable; i++) {
+                                byte b = packetBytes[i];
+
+                                if (b == 'g') {
+                                    writing = false;
+                                    break;
+                                }
+                            }
+                            write_again = true;
+                            startTime = System.currentTimeMillis();
+                        }
                     }
 
                 }
+                reading = false;
+            } catch (IOException io) {
+
             }
-        });
-        workerThread.start();
+        }
+
     }
+
+
 
     private void disconnect()
     {
@@ -372,6 +434,8 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+
 
     private Map<String,String> parseData(String data,int step)
     {
@@ -395,18 +459,20 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void sendPIDData(String data)
+    public void sendPIDData(String data,Button updateButton)
     {
-        try{
-            if(mmOutputStream != null)
-            {
-                mmOutputStream.write(data.getBytes());
-            }
-        }catch (IOException io){
-            Log.d("Output Error",io.getMessage());
+        if(connectedThread!=null) {
+            Toast.makeText(this,"Updating..",Toast.LENGTH_SHORT).show();
+            connectedThread.write(data);
+            Toast.makeText(this,"Done",Toast.LENGTH_SHORT).show();
+            updateButton.setEnabled(true);
         }
+    }
 
-
+    @Override
+    protected void onPause() {
+        super.onPause();
+        disconnect();
     }
 
     @Override

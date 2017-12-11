@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.rainjm.droneapp.R;
 import com.rainjm.droneapp.activities.MainActivity;
@@ -52,9 +53,9 @@ public class PIDFragment extends Fragment {
         editKpRoll = (EditText) view.findViewById(R.id.roll_kp);
         editKdRoll = (EditText) view.findViewById(R.id.roll_kd);
         editKiRoll = (EditText) view.findViewById(R.id.roll_ki);
-        editKpYaw = (EditText) view.findViewById(R.id.yaw_kp);
-        editKdYaw = (EditText) view.findViewById(R.id.yaw_kd);
-        editKiYaw = (EditText) view.findViewById(R.id.yaw_ki);
+//        editKpYaw = (EditText) view.findViewById(R.id.yaw_kp);
+//        editKdYaw = (EditText) view.findViewById(R.id.yaw_kd);
+//        editKiYaw = (EditText) view.findViewById(R.id.yaw_ki);
         updateButton = (Button) view.findViewById(R.id.update_button);
     }
     @Nullable
@@ -85,25 +86,27 @@ public class PIDFragment extends Fragment {
         double roll_kp = Double.parseDouble(editKpRoll.getText().toString());
         double roll_kd = Double.parseDouble(editKdRoll.getText().toString());
         double roll_ki = Double.parseDouble(editKiRoll.getText().toString());
-        double yaw_kp = Double.parseDouble(editKpYaw.getText().toString());
-        double yaw_kd = Double.parseDouble(editKdYaw.getText().toString());
-        double yaw_ki = Double.parseDouble(editKiYaw.getText().toString());
+//        double yaw_kp = Double.parseDouble(editKpYaw.getText().toString());
+//        double yaw_kd = Double.parseDouble(editKdYaw.getText().toString());
+//        double yaw_ki = Double.parseDouble(editKiYaw.getText().toString());
 
         StringBuilder sb = new StringBuilder();
-        sb.append(throttle_kp + " ");
+        sb.append("s"+throttle_kp+" ");
         sb.append(throttle_kd + " ");
         sb.append(throttle_ki + " ");
         sb.append(pitch_kp + " ");
         sb.append(pitch_kd + " ");
         sb.append(pitch_ki + " ");
         sb.append(roll_kp + " ");
-        sb.append(roll_kd + " ");
-        sb.append(roll_ki + " ");
-        sb.append(yaw_kp  + " ");
-        sb.append(yaw_kd + " ");
-        sb.append(yaw_ki +"\n");
+        sb.append(roll_kd  + " ");
+        sb.append(roll_ki + "\n");
+//        sb.append(yaw_kp + "&");
+//        sb.append(yaw_kd );
+//        sb.append(yaw_ki +"\n");
 
-        ((MainActivity)getActivity()).sendPIDData(sb.toString());
+        updateButton.setEnabled(false);
+
+        ((MainActivity)getActivity()).sendPIDData(sb.toString(),updateButton);
 
 
     }
